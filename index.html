@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#059669" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Sakafo & Balance" />
+  <title>Sakafo & Balance — Coach Santé & Sport</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              900: '#064e3b',
+            },
+            warm: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Masquer la barre de défilement tout en gardant le scroll fluide */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Animation douce pour les transitions d'onglets */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tab-content {
+      animation: fadeIn 0.22s ease-out forwards;
+    }
+
+    /* Effet de pression tactile */
+    .tap-scale:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-800 antialiased selection:bg-brand-100 selection:text-brand-900 flex justify-center min-h-screen">
+
+  <!-- Conteneur simulé smartphone sur desktop / plein écran sur mobile -->
+  <div class="w-full max-w-md bg-slate-50 min-h-screen sm:min-h-[844px] sm:h-[844px] sm:my-6 sm:rounded-[2.5rem] sm:shadow-2xl sm:border-[8px] sm:border-slate-800 flex flex-col relative overflow-hidden">
+
+    <!-- En-tête supérieur fixe -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-100 px-5 pt-5 pb-3.5 flex items-center justify-between sticky top-0 z-20">
+      <div>
+        <p id="current-date" class="text-xs font-medium text-slate-400 uppercase tracking-wider">Aujourd'hui</p>
+        <h1 class="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5">
+          <span>Sakafo & Balance</span>
+          <span class="inline-block w-2 h-2 rounded-full bg-brand-500"></span>
+        </h1>
+      </div>
+
+      <!-- Badge Streak Zéro Sucre -->
+      <div id="header-streak-badge" class="flex items-center gap-1.5 bg-warm-50 border border-warm-100 px-3 py-1.5 rounded-full shadow-xs">
+        <i class="ph-fill ph-fire text-warm-500 text-base"></i>
+        <span class="text-xs font-bold text-warm-600"><span id="streak-count-header">0</span>j sans sucre</span>
+      </div>
+    </header>
+
+    <!-- Zone de contenu défilable -->
+    <main id="main-scroll" class="flex-1 overflow-y-auto no-scrollbar px-5 pt-4 pb-28 space-y-5">
+
+      <!-- ========================================== -->
+      <!-- ONGLET 1 : ACCUEIL / AUJOURD'HUI           -->
+      <!-- ========================================== -->
+      <section id="tab-home" class="tab-content space-y-5">
+        
+        <!-- Carte Progression du Jour & Streak -->
+        <div class="bg-gradient-to-br from-brand-600 to-brand-700 rounded-3xl p-5 text-white shadow-lg shadow-brand-600/20 relative overflow-hidden">
+          <div class="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold bg-white/15 px-2.5 py-1 rounded-full mb-2">
+                <i class="ph-fill ph-sparkle"></i> Objectif Quotidien
+              </span>
+              <h2 class="text-xl font-bold leading-snug">Ta journée équilibre</h2>
+            </div>
+            <div class="text-right">
+              <span id="daily-progress-percent" class="text-2xl font-extrabold">0%</span>
+              <p class="text-[11px] text-brand-100">accompli</p>
+            </div>
+          </div>
+
+          <!-- Barre de progression -->
+          <div class="w-full bg-brand-900/40 h-2.5 rounded-full overflow-hidden mb-3">
+            <div id="daily-progress-bar" class="bg-white h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-brand-100">
+            <span id="motivation-text">Coche tes habitudes au fil de la journée !</span>
+            <button onclick="resetTodayPrompt()" class="underline hover:text-white transition">Réinitialiser</button>
+          </div>
+        </div>
+
+        <!-- Section Healthy Habits (Validation en 1 clic) -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Healthy Habits du jour</h3>
+            <span class="text-xs font-medium text-slate-400">1 tap pour valider</span>
+          </div>
+
+          <div class="space-y-3">
+            <!-- Habitude 1 : Zéro sucre ajouté -->
+            <button onclick="toggleHabit('noSugar')" id="habit-card-noSugar" class="w-full text-left bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5 transition-all tap-scale">
+              <div id="habit-icon-noSugar" class="w-11 h-11 rounded-xl bg-warm-50 text-warm-600 flex items-center justify-center text-xl shrink-0 transition-colors">
+                <i class="ph-bold ph-prohibit"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <p class="font-bold text-slate-900 text-sm truncate">Zéro sucre ajouté</p>
+                  <span class="text-[10px] font-semibold bg-warm-50 text-warm-600 px-2 py-0.5 rounded-full">Priorité</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">Thé/café nature, pas de sodas ni mofo sucrés</p>
+              </div>
+              <div id="habit-check-noSugar" class="w-7 h-7 rounded-full border-2 border-slate-200 flex items-center justify-center text-white transition-all shrink-0">
+                <i class="ph-bold ph-check text-sm opacity-0"></i>
+              </div>
+            </button>
+
+            <!-- Habitude 2 : Assiette Malgache Équilibrée -->
+            <button onclick="toggleHabit('balancedPlate')" id="habit-card-balancedPlate" class="w-full text-left bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5 transition-all tap-scale">
+              <div id="habit-icon-balancedPlate" class="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl shrink-0 transition-colors">
+                <i class="ph-bold ph-bowl-food"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-bold text-slate-900 text-sm truncate">Assiette familiale dosée</p>
+                <p class="text-xs text-slate-500 mt-0.5">1/2 brèdes/légumes • 1/4 vary • 1/4 laoka</p>
+              </div>
+              <div id="habit-check-balancedPlate" class="w-7 h-7 rounded-full border-2 border-slate-200 flex items-center justify-center text-white transition-all shrink-0">
+                <i class="ph-bold ph-check text-sm opacity-0"></i>
+              </div>
+            </button>
+
+            <!-- Habitude 3 : Séance Sport / Posture -->
+            <button onclick="toggleHabit('workoutDone')" id="habit-card-workoutDone" class="w-full text-left bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5 transition-all tap-scale">
+              <div id="habit-icon-workoutDone" class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0 transition-colors">
+                <i class="ph-bold ph-person-simple-run"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-bold text-slate-900 text-sm truncate">Sport & Posture du jour</p>
+                <p class="text-xs text-slate-500 mt-0.5">15-25 min haut du dos, gainage ou marche</p>
+              </div>
+              <div id="habit-check-workoutDone" class="w-7 h-7 rounded-full border-2 border-slate-200 flex items-center justify-center text-white transition-all shrink-0">
+                <i class="ph-bold ph-check text-sm opacity-0"></i>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Compteur Interactif d'Hydratation (Objectif 2L = 8 verres de 250ml) -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg">
+                <i class="ph-fill ph-drop"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-900 text-sm">Hydratation</h3>
+                <p class="text-xs text-slate-500"><span id="water-liters" class="font-semibold text-sky-600">0.00 L</span> / 2.00 L (8 verres)</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="changeWater(-1)" aria-label="Retirer un verre" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold tap-scale transition">
+                <i class="ph-bold ph-minus"></i>
+              </button>
+              <button onclick="changeWater(1)" aria-label="Ajouter un verre" class="w-9 h-9 rounded-xl bg-sky-500 hover:bg-sky-600 text-white flex items-center justify-center font-bold shadow-xs tap-scale transition">
+                <i class="ph-bold ph-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Grille des 8 verres -->
+          <div id="water-glasses-grid" class="grid grid-cols-8 gap-1.5 pt-1">
+            <!-- Généré dynamiquement en JS -->
+          </div>
+        </div>
+
+        <!-- Suivi Rapide du Poids + Mini Graphique SVG -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Évolution du poids</h3>
+              <p class="text-xs text-slate-500">Tendance globale (sans pression)</p>
+            </div>
+            <div class="text-right">
+              <span id="latest-weight-display" class="text-lg font-extrabold text-slate-900">-- kg</span>
+              <span id="weight-diff-badge" class="block text-[11px] font-semibold text-brand-600"></span>
+            </div>
+          </div>
+
+          <!-- Graphique SVG propre -->
+          <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
+            <svg id="weight-chart" viewBox="0 0 300 90" class="w-full h-24 overflow-visible"></svg>
+          </div>
+
+          <!-- Formulaire saisie rapide -->
+          <form onsubmit="logWeight(event)" class="flex gap-2">
+            <div class="relative flex-1">
+              <input type="number" step="0.1" min="30" max="250" id="weight-input" placeholder="Ex: 68.5" required
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition" />
+              <span class="absolute right-3.5 top-2.5 text-xs font-semibold text-slate-400">kg</span>
+            </div>
+            <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-4 py-2.5 rounded-xl tap-scale transition">
+              Noter
+            </button>
+          </form>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- ONGLET 2 : COACH IA ASSIETTE MALGACHE      -->
+      <!-- ========================================== -->
+      <section id="tab-coach" class="tab-content hidden space-y-4">
+        
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center text-xl">
+              <i class="ph-fill ph-sparkle"></i>
+            </div>
+            <div>
+              <h2 class="font-bold text-slate-900 text-base">Coach Assiette Familiale</h2>
+              <p class="text-xs text-slate-500">Dose ton repas malgache à l'œil nu, sans balance</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+            Indique le plat préparé pour la famille (ou une envie de goûter/boisson). Je t'indique exactement comment remplir ton assiette et gérer le sucre ou les graisses.
+          </p>
+        </div>
+
+        <!-- Exemples rapides en un clic -->
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Exemples rapides :</p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="fillMealExample('Vary sy ravitoto sy henakisoa')" class="text-xs font-medium bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-700 border border-slate-200 px-3 py-1.5 rounded-full transition tap-scale">
+              🍃 Vary sy ravitoto
+            </button>
+            <button onclick="fillMealExample('Ro mazava sy anamamy sy akoho')" class="text-xs font-medium bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-700 border border-slate-200 px-3 py-1.5 rounded-full transition tap-scale">
+              🍲 Ro mazava sy akoho
+            </button>
+            <button onclick="fillMealExample('Akoho sy voanio miaraka amin\'ny vary')" class="text-xs font-medium bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-700 border border-slate-200 px-3 py-1.5 rounded-full transition tap-scale">
+              🥥 Akoho sy voanio
+            </button>
+            <button onclick="fillMealExample('Thé du matin et 2 mofo gasy')" class="text-xs font-medium bg-white hover:bg-warm-50 text-slate-700 hover:text-warm-700 border border-slate-200 px-3 py-1.5 rounded-full transition tap-scale">
+              🥞 Thé & Mofo gasy
+            </button>
+          </div>
+        </div>
+
+        <!-- Formulaire de requête IA -->
+        <form onsubmit="analyzeMealWithAI(event)" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          <label for="meal-input" class="block text-xs font-bold text-slate-700">Qu'y a-t-il au menu aujourd'hui ?</label>
+          <textarea id="meal-input" rows="2" required placeholder="Ex: Vary sosoa sy kitoza, ou Lasopy légumes sy mofo..."
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition resize-none"></textarea>
+          
+          <button type="submit" id="btn-analyze-meal" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-brand-600/20 flex items-center justify-center gap-2 tap-scale transition">
+            <i class="ph-bold ph-magic-wand text-base"></i>
+            <span>Comment doser mon assiette ?</span>
+          </button>
+        </form>
+
+        <!-- Zone de chargement IA -->
+        <div id="meal-ai-loading" class="hidden bg-white p-6 rounded-2xl border border-slate-200/80 text-center space-y-2">
+          <div class="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto"></div>
+          <p class="text-xs font-semibold text-slate-600">Ton coach prépare ton dosage visuel...</p>
+        </div>
+
+        <!-- Résultat IA structuré -->
+        <div id="meal-ai-result" class="hidden space-y-3">
+          <div class="bg-white p-4 rounded-2xl border-2 border-brand-500/30 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <span class="text-xs font-extrabold text-brand-700 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="ph-fill ph-check-circle text-base"></i> Guide Visuel Sans Balance
+              </span>
+              <span id="ai-meal-tag" class="text-[11px] font-semibold bg-brand-50 text-brand-700 px-2.5 py-0.5 rounded-full">Équilibré</span>
+            </div>
+
+            <!-- Repères visuels (Poignée, Paume, Légumes) -->
+            <div id="ai-portions-grid" class="grid grid-cols-1 gap-2.5 text-xs">
+              <!-- Rempli dynamiquement -->
+            </div>
+
+            <!-- Alerte sucre / graisses & Conseil -->
+            <div id="ai-advice-box" class="bg-warm-50 border border-warm-100 p-3 rounded-xl text-xs text-slate-700 leading-relaxed">
+              <!-- Rempli dynamiquement -->
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- ONGLET 3 : SPORT & POSTURE                 -->
+      <!-- ========================================== -->
+      <section id="tab-sport" class="tab-content hidden space-y-4">
+        
+        <!-- En-tête Sport & Sélecteur de jour -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-bold text-slate-900 text-base">Sport & Posture</h2>
+              <p class="text-xs text-slate-500">Haut du dos, épaules, gainage & cardio doux</p>
+            </div>
+            <span class="text-xs font-bold bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full">15 - 25 min</span>
+          </div>
+
+          <!-- Sélecteur de jours de la semaine -->
+          <div id="sport-days-selector" class="grid grid-cols-7 gap-1 pt-1">
+            <!-- Généré en JS -->
+          </div>
+        </div>
+
+        <!-- Minuteur / Chronomètre d'entraînement intégré -->
+        <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-md space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span id="timer-phase-dot" class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+              <span id="timer-phase-label" class="text-xs font-bold uppercase tracking-wider text-slate-300">Prêt • 40s Effort / 20s Repos</span>
+            </div>
+            <button onclick="toggleTimerMode()" class="text-[11px] font-semibold bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg transition">
+              Mode: <span id="timer-mode-text">40s / 20s</span>
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div class="font-mono text-4xl font-extrabold tracking-tight" id="timer-display">00:40</div>
+            <div class="flex items-center gap-2">
+              <button onclick="resetTimer()" aria-label="Réinitialiser le minuteur" class="w-11 h-11 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-lg tap-scale transition">
+                <i class="ph-bold ph-arrow-counter-clockwise"></i>
+              </button>
+              <button onclick="toggleTimer()" id="btn-timer-toggle" class="h-11 px-5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm flex items-center gap-1.5 tap-scale transition">
+                <i class="ph-fill ph-play" id="timer-play-icon"></i>
+                <span id="timer-play-text">Démarrer</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Adaptation IA de la séance du jour -->
+        <div class="bg-indigo-50/70 border border-indigo-100 p-3.5 rounded-2xl space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+              <i class="ph-fill ph-sparkle text-indigo-600"></i> Adapter la séance avec l'IA
+            </span>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="adaptWorkoutWithAI('J\'ai seulement 15 minutes aujourd\'hui')" class="text-[11px] font-semibold bg-white text-indigo-700 border border-indigo-200 px-2.5 py-1.5 rounded-xl hover:bg-indigo-100 transition tap-scale">
+              ⏱️ Seulement 15 min
+            </button>
+            <button onclick="adaptWorkoutWithAI('Je suis très fatiguée aujourd\'hui, focus douceur et posture')" class="text-[11px] font-semibold bg-white text-indigo-700 border border-indigo-200 px-2.5 py-1.5 rounded-xl hover:bg-indigo-100 transition tap-scale">
+              🔋 Fatiguée / Douceur
+            </button>
+            <button onclick="adaptWorkoutWithAI('J\'ai mal au haut du dos et aux épaules après le travail')" class="text-[11px] font-semibold bg-white text-indigo-700 border border-indigo-200 px-2.5 py-1.5 rounded-xl hover:bg-indigo-100 transition tap-scale">
+              🧘 Tensions épaules/dos
+            </button>
+          </div>
+          <div id="sport-ai-loading" class="hidden text-xs text-indigo-600 font-medium py-1 flex items-center gap-2">
+            <span class="w-3.5 h-3.5 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin"></span>
+            Adaptation de ta séance en cours...
+          </div>
+        </div>
+
+        <!-- Liste des exercices de la séance du jour -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div>
+              <h3 id="workout-title" class="font-bold text-slate-900 text-sm">Posture Dos & Épaules + Cardio Doux</h3>
+              <p id="workout-subtitle" class="text-xs text-slate-500">3 tours • 40s effort / 20s repos</p>
+            </div>
+            <button onclick="completeWorkoutSession()" class="text-xs font-bold bg-brand-50 text-brand-700 hover:bg-brand-100 px-3 py-1.5 rounded-xl transition tap-scale">
+              Valider séance
+            </button>
+          </div>
+
+          <div id="exercises-list" class="space-y-2.5">
+            <!-- Exercices générés en JS -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Notification Toast flottante (remplace alert()) -->
+    <div id="toast-message" class="pointer-events-none fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900/95 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg opacity-0 transition-opacity duration-300 z-50 flex items-center gap-2 whitespace-nowrap">
+      <i class="ph-fill ph-check-circle text-brand-400 text-base"></i>
+      <span id="toast-text">Action enregistrée</span>
+    </div>
+
+    <!-- Barre de Navigation Inférieure (Bottom Tab Bar) -->
+    <nav class="bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-6 py-2.5 flex items-center justify-around absolute bottom-0 w-full z-30">
+      <button onclick="switchTab('home')" id="nav-home" class="nav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-brand-600 transition">
+        <i class="ph-fill ph-house text-2xl"></i>
+        <span class="text-[11px] font-bold">Aujourd'hui</span>
+      </button>
+
+      <button onclick="switchTab('coach')" id="nav-coach" class="nav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-slate-400 hover:text-slate-600 transition">
+        <i class="ph ph-bowl-food text-2xl"></i>
+        <span class="text-[11px] font-semibold">Coach Repas</span>
+      </button>
+
+      <button onclick="switchTab('sport')" id="nav-sport" class="nav-btn flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-slate-400 hover:text-slate-600 transition">
+        <i class="ph ph-barbell text-2xl"></i>
+        <span class="text-[11px] font-semibold">Sport</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Logique JavaScript complète -->
+  <script>
+    // =========================================================================
+    // 1. GESTION DE L'ÉTAT & LOCALSTORAGE
+    // =========================================================================
+    const STORAGE_KEY = 'sakafo_balance_v1';
+
+    function getTodayKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    const defaultState = {
+      streak: 3, // Exemple initial motivant modifiable automatiquement
+      lastStreakDate: '',
+      dailyLogs: {}, // { 'YYYY-MM-DD': { noSugar: bool, balancedPlate: bool, workoutDone: bool, water: number } }
+      weightHistory: [
+        { date: 'J-14', weight: 71.2 },
+        { date: 'J-7', weight: 70.5 },
+        { date: 'Hier', weight: 70.1 }
+      ],
+      selectedSportDay: new Date().getDay(), // 0 = Dimanche ... 6 = Samedi
+      completedExercises: {}
+    };
+
+    let appState = loadState();
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          return { ...defaultState, ...JSON.parse(saved) };
+        }
+      } catch (e) {
+        console.warn('Erreur lecture localStorage:', e);
+      }
+      return JSON.parse(JSON.stringify(defaultState));
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('Erreur sauvegarde localStorage:', e);
+      }
+    }
+
+    function getTodayData() {
+      const key = getTodayKey();
+      if (!appState.dailyLogs[key]) {
+        appState.dailyLogs[key] = {
+          noSugar: false,
+          balancedPlate: false,
+          workoutDone: false,
+          water: 0
+        };
+      }
+      return appState.dailyLogs[key];
+    }
+
+    // =========================================================================
+    // 2. INTERFACE UTILISATEUR & NAVIGATION
+    // =========================================================================
+    function formatFrenchDate() {
+      const options = { weekday: 'long', day: 'numeric', month: 'long' };
+      const str = new Date().toLocaleDateString('fr-FR', options);
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast-message');
+      const text = document.getElementById('toast-text');
+      text.textContent = message;
+      toast.classList.remove('opacity-0');
+      clearTimeout(window._toastTimeout);
+      window._toastTimeout = setTimeout(() => {
+        toast.classList.add('opacity-0');
+      }, 2600);
+    }
+
+    function switchTab(tabName) {
+      // Masquer toutes les sections
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      // Afficher la cible
+      const target = document.getElementById(`tab-${tabName}`);
+      if (target) target.classList.remove('hidden');
+
+      // Mettre à jour les icônes et couleurs de navigation
+      const navMap = {
+        home: { el: document.getElementById('nav-home'), icon: 'ph-house' },
+        coach: { el: document.getElementById('nav-coach'), icon: 'ph-bowl-food' },
+        sport: { el: document.getElementById('nav-sport'), icon: 'ph-barbell' }
+      };
+
+      Object.entries(navMap).forEach(([key, item]) => {
+        const iconEl = item.el.querySelector('i');
+        const labelEl = item.el.querySelector('span');
+        if (key === tabName) {
+          item.el.classList.remove('text-slate-400', 'hover:text-slate-600');
+          item.el.classList.add('text-brand-600');
+          iconEl.className = `ph-fill ${item.icon} text-2xl`;
+          labelEl.classList.replace('font-semibold', 'font-bold');
+        } else {
+          item.el.classList.add('text-slate-400', 'hover:text-slate-600');
+          item.el.classList.remove('text-brand-600');
+          iconEl.className = `ph ${item.icon} text-2xl`;
+          labelEl.classList.replace('font-bold', 'font-semibold');
+        }
+      });
+
+      document.getElementById('main-scroll').scrollTop = 0;
+    }
+
+    // =========================================================================
+    // 3. ONGLET ACCUEIL : HABITUDES, EAU, STREAK & POIDS
+    // =========================================================================
+    function toggleHabit(habitKey) {
+      const today = getTodayData();
+      const todayKey = getTodayKey();
+      today[habitKey] = !today[habitKey];
+
+      // Gestion du streak Zéro Sucre Ajouté
+      if (habitKey === 'noSugar') {
+        if (today.noSugar && appState.lastStreakDate !== todayKey) {
+          appState.streak += 1;
+          appState.lastStreakDate = todayKey;
+          showToast(`Bravo ! ${appState.streak} jours sans sucre ajouté 🔥`);
+        } else if (!today.noSugar && appState.lastStreakDate === todayKey) {
+          appState.streak = Math.max(0, appState.streak - 1);
+          appState.lastStreakDate = '';
+        }
+      } else if (today[habitKey]) {
+        showToast('Habitude validée ! Continue comme ça 💪');
+      }
+
+      saveState();
+      renderHome();
+    }
+
+    function changeWater(delta) {
+      const today = getTodayData();
+      today.water = Math.min(8, Math.max(0, today.water + delta));
+      if (today.water === 8 && delta > 0) {
+        showToast('Objectif 2L d\'eau atteint ! 💧');
+      }
+      saveState();
+      renderHome();
+    }
+
+    function resetTodayPrompt() {
+      const key = getTodayKey();
+      appState.dailyLogs[key] = { noSugar: false, balancedPlate: false, workoutDone: false, water: 0 };
+      saveState();
+      renderHome();
+      showToast('Compteurs du jour remis à zéro');
+    }
+
+    function logWeight(e) {
+      e.preventDefault();
+      const input = document.getElementById('weight-input');
+      const val = parseFloat(input.value);
+      if (isNaN(val) || val < 30 || val > 250) return;
+
+      const now = new Date();
+      const label = `${now.getDate()}/${now.getMonth() + 1}`;
+      
+      // Remplacer si déjà saisi aujourd'hui, sinon ajouter
+      const lastEntry = appState.weightHistory[appState.weightHistory.length - 1];
+      if (lastEntry && lastEntry.date === label) {
+        lastEntry.weight = val;
+      } else {
+        appState.weightHistory.push({ date: label, weight: val });
+        if (appState.weightHistory.length > 8) {
+          appState.weightHistory.shift();
+        }
+      }
+
+      input.value = '';
+      saveState();
+      renderWeightChart();
+      showToast(`Poids enregistré : ${val.toFixed(1)} kg`);
+    }
+
+    function renderWeightChart() {
+      const history = appState.weightHistory;
+      const svg = document.getElementById('weight-chart');
+      const latestDisplay = document.getElementById('latest-weight-display');
+      const diffBadge = document.getElementById('weight-diff-badge');
+
+      if (!history || history.length === 0) return;
+
+      const latest = history[history.length - 1].weight;
+      const first = history[0].weight;
+      latestDisplay.textContent = `${latest.toFixed(1)} kg`;
+
+      const diff = (latest - first).toFixed(1);
+      if (diff < 0) {
+        diffBadge.textContent = `${diff} kg sur la période`;
+        diffBadge.className = 'block text-[11px] font-semibold text-brand-600';
+      } else if (diff > 0) {
+        diffBadge.textContent = `+${diff} kg sur la période`;
+        diffBadge.className = 'block text-[11px] font-semibold text-slate-400';
+      } else {
+        diffBadge.textContent = 'Stable';
+        diffBadge.className = 'block text-[11px] font-semibold text-slate-400';
+      }
+
+      // Dessin SVG
+      const width = 300;
+      const height = 90;
+      const padX = 22;
+      const padY = 18;
+
+      const weights = history.map(h => h.weight);
+      const minW = Math.min(...weights) - 0.5;
+      const maxW = Math.max(...weights) + 0.5;
+      const rangeW = maxW - minW || 1;
+
+      const points = history.map((item, idx) => {
+        const x = history.length === 1
+          ? width / 2
+          : padX + (idx / (history.length - 1)) * (width - padX * 2);
+        const y = height - padY - ((item.weight - minW) / rangeW) * (height - padY * 2);
+        return { x, y, weight: item.weight, date: item.date };
+      });
+
+      const polylinePoints = points.map(p => `${p.x},${p.y}`).join(' ');
+
+      let svgContent = `
+        <defs>
+          <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+      `;
+
+      if (points.length > 1) {
+        const areaPoints = `${points[0].x},${height - 6} ${polylinePoints} ${points[points.length - 1].x},${height - 6}`;
+        svgContent += `<polygon points="${areaPoints}" fill="url(#weightGrad)" />`;
+        svgContent += `<polyline fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${polylinePoints}" />`;
+      }
+
+      points.forEach((p, idx) => {
+        const isLast = idx === points.length - 1;
+        svgContent += `
+          <circle cx="${p.x}" cy="${p.y}" r="${isLast ? 4.5 : 3.5}" fill="${isLast ? '#059669' : '#ffffff'}" stroke="#059669" stroke-width="2" />
+          <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" font-size="9" font-weight="700" fill="#334155">${p.weight.toFixed(1)}</text>
+          <text x="${p.x}" y="${height - 1}" text-anchor="middle" font-size="8" fill="#94a3b8">${p.date}</text>
+        `;
+      });
+
+      svg.innerHTML = svgContent;
+    }
+
+    function renderHome() {
+      const today = getTodayData();
+      document.getElementById('streak-count-header').textContent = appState.streak;
+
+      // Mise à jour des cartes d'habitudes
+      const habits = ['noSugar', 'balancedPlate', 'workoutDone'];
+      let completedCount = 0;
+
+      habits.forEach(key => {
+        const isDone = today[key];
+        if (isDone) completedCount++;
+
+        const card = document.getElementById(`habit-card-${key}`);
+        const check = document.getElementById(`habit-check-${key}`);
+        const checkIcon = check.querySelector('i');
+
+        if (isDone) {
+          card.classList.add('border-brand-500', 'bg-brand-50/30');
+          card.classList.remove('border-slate-200/80', 'bg-white');
+          check.classList.add('bg-brand-600', 'border-brand-600');
+          check.classList.remove('border-slate-200');
+          checkIcon.classList.remove('opacity-0');
+        } else {
+          card.classList.remove('border-brand-500', 'bg-brand-50/30');
+          card.classList.add('border-slate-200/80', 'bg-white');
+          check.classList.remove('bg-brand-600', 'border-brand-600');
+          check.classList.add('border-slate-200');
+          checkIcon.classList.add('opacity-0');
+        }
+      });
+
+      // Hydratation
+      const liters = (today.water * 0.25).toFixed(2);
+      document.getElementById('water-liters').textContent = `${liters} L`;
+      if (today.water >= 8) completedCount++;
+
+      const grid = document.getElementById('water-glasses-grid');
+      grid.innerHTML = '';
+      for (let i = 1; i <= 8; i++) {
+        const filled = i <= today.water;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => {
+          today.water = (today.water === i) ? i - 1 : i;
+          saveState();
+          renderHome();
+        };
+        btn.className = `h-8 rounded-lg flex items-center justify-center transition tap-scale ${
+          filled ? 'bg-sky-500 text-white shadow-xs' : 'bg-slate-100 text-slate-300 hover:bg-slate-200'
+        }`;
+        btn.innerHTML = `<i class="ph-fill ph-drop text-sm"></i>`;
+        grid.appendChild(btn);
+      }
+
+      // Progression globale (sur 4 piliers : 3 habitudes + 2L d'eau)
+      const percent = Math.round((completedCount / 4) * 100);
+      document.getElementById('daily-progress-percent').textContent = `${percent}%`;
+      document.getElementById('daily-progress-bar').style.width = `${percent}%`;
+
+      const motText = document.getElementById('motivation-text');
+      if (percent === 100) {
+        motText.textContent = 'Journée parfaite ! Objectifs 100% validés 🎉';
+      } else if (percent >= 50) {
+        motText.textContent = 'Super rythme, plus que quelques étapes !';
+      } else {
+        motText.textContent = 'Chaque petite habitude compte aujourd\'hui.';
+      }
+
+      renderWeightChart();
+    }
+
+    // =========================================================================
+    // 4. ONGLET COACH IA (INTÉGRATION GEMINI API)
+    // =========================================================================
+    function fillMealExample(text) {
+      document.getElementById('meal-input').value = text;
+    }
+
+    async function callGeminiWithBackoff(payload) {
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+      const delays = [1000, 2000, 4000];
+
+      for (let attempt = 0; attempt <= delays.length; attempt++) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          return await response.json();
+        } catch (err) {
+          if (attempt === delays.length) throw err;
+          await new Promise(res => setTimeout(res, delays[attempt]));
+        }
+      }
+    }
+
+    async function analyzeMealWithAI(e) {
+      e.preventDefault();
+      const mealText = document.getElementById('meal-input').value.trim();
+      if (!mealText) return;
+
+      const btn = document.getElementById('btn-analyze-meal');
+      const loading = document.getElementById('meal-ai-loading');
+      const resultBox = document.getElementById('meal-ai-result');
+
+      btn.disabled = true;
+      btn.classList.add('opacity-60');
+      loading.classList.remove('hidden');
+      resultBox.classList.add('hidden');
+
+      const systemInstruction = `Tu es un coach nutritionnel bienveillant spécialisé dans la cuisine familiale malgache et la perte de poids durable sans privation. L'utilisatrice mange en famille (plats malgaches partagés comme le vary, ravitoto, ro mazava, akoho, lasopy, mofo gasy, etc.), souhaite perdre du poids en dosant les quantités à l'œil nu (sans balance) et en éliminant le sucre ajouté. Réponds en français clair, chaleureux et ultra-pratique.`;
+
+      const payload = {
+        contents: [{
+          parts: [{
+            text: `Analyse ce repas ou cette envie : "${mealText}". Donne le dosage visuel précis de l'assiette (sans balance : poignée, paume, etc.), le statut général, et un conseil doux sur le sucre caché ou les graisses.`
+          }]
+        }],
+        systemInstruction: {
+          parts: [{ text: systemInstruction }]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              badgeStatut: { type: "STRING", description: "Ex: 'Facile à doser', 'Attention sucre', ou 'Plaisir à cadrer'" },
+              portionRizOuFeculent: { type: "STRING", description: "Dosage visuel précis pour le riz ou féculent (ex: '1 poignée fermée max, soit 1/4 de l\'assiette')" },
+              portionProteineEtLaoka: { type: "STRING", description: "Dosage visuel pour la viande/poisson/laoka et gestion de la sauce/huile" },
+              portionLegumesOuBredes: { type: "STRING", description: "Conseil pour remplir la moitié de l'assiette avec des légumes ou brèdes" },
+              conseilSucreEtEquilibre: { type: "STRING", description: "Alerte douce s'il y a du sucre caché/gras et astuce pour le reste de la journée" }
+            },
+            required: ["badgeStatut", "portionRizOuFeculent", "portionProteineEtLaoka", "portionLegumesOuBredes", "conseilSucreEtEquilibre"]
+          }
+        }
+      };
+
+      try {
+        const result = await callGeminiWithBackoff(payload);
+        const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const data = JSON.parse(rawText);
+
+        document.getElementById('ai-meal-tag').textContent = data.badgeStatut;
+        document.getElementById('ai-portions-grid').innerHTML = `
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-start gap-2.5">
+            <span class="text-base">🍚</span>
+            <div>
+              <p class="font-bold text-slate-800">Riz / Féculents</p>
+              <p class="text-slate-600 mt-0.5">${data.portionRizOuFeculent}</p>
+            </div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-start gap-2.5">
+            <span class="text-base">🍗</span>
+            <div>
+              <p class="font-bold text-slate-800">Laoka / Protéines</p>
+              <p class="text-slate-600 mt-0.5">${data.portionProteineEtLaoka}</p>
+            </div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-start gap-2.5">
+            <span class="text-base">🥬</span>
+            <div>
+              <p class="font-bold text-slate-800">Brèdes / Légumes (1/2 assiette)</p>
+              <p class="text-slate-600 mt-0.5">${data.portionLegumesOuBredes}</p>
+            </div>
+          </div>
+        `;
+        document.getElementById('ai-advice-box').innerHTML = `
+          <p class="font-bold text-warm-700 mb-1 flex items-center gap-1">
+            <i class="ph-fill ph-lightbulb text-warm-500"></i> Conseil Sucre & Équilibre :
+          </p>
+          <p>${data.conseilSucreEtEquilibre}</p>
+        `;
+
+        resultBox.classList.remove('hidden');
+      } catch (err) {
+        // Fallback local intelligent si hors-ligne
+        document.getElementById('ai-meal-tag').textContent = 'Repère Standard';
+        document.getElementById('ai-portions-grid').innerHTML = `
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <p class="font-bold text-slate-800">🍚 Riz (1/4 de l'assiette)</p>
+            <p class="text-slate-600">Limite le vary à l'équivalent de ton poing fermé (environ 3-4 cuillères à soupe bombées).</p>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <p class="font-bold text-slate-800">🍗 Laoka (1/4 de l'assiette)</p>
+            <p class="text-slate-600">Une portion de la taille de la paume de ta main, en égouttant l'excès d'huile ou de sauce.</p>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <p class="font-bold text-slate-800">🥬 Légumes & Brèdes (1/2 de l'assiette)</p>
+            <p class="text-slate-600">Complète la moitié de ton assiette avec du ro mazava, des brèdes ou une crudité sans sauce sucrée.</p>
+          </div>
+        `;
+        document.getElementById('ai-advice-box').innerHTML = `
+          <p class="font-bold text-warm-700 mb-1">💡 Astuce Zéro Sucre :</p>
+          <p>Termine le repas par un grand verre d'eau ou une infusion nature pour couper l'envie de sucré.</p>
+        `;
+        resultBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-60');
+        loading.classList.add('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 5. ONGLET SPORT & POSTURE + CHRONOMÈTRE + ADAPTATION IA
+    // =========================================================================
+    const weeklyWorkouts = {
+      1: {
+        dayName: 'Lun',
+        title: 'Posture Haut du Dos & Épaules',
+        subtitle: '20 min • 3 tours (40s effort / 20s repos)',
+        exercises: [
+          { name: 'Ouverture thoracique & bras en W', detail: 'Serre les omoplates vers l\'arrière, nuque longue' },
+          { name: 'Bird-Dog (Gainage quadrupédie)', detail: 'Bras et jambe opposés tendus, dos plat' },
+          { name: 'Pompes inclinées contre un mur/table', detail: 'Coudes à 45°, abdos engagés' },
+          { name: 'Marche active sur place + montées de genoux', detail: 'Cardio doux, garde les épaules basses' }
+        ]
+      },
+      2: {
+        dayName: 'Mar',
+        title: 'Cardio Doux & Brûle-Graisses',
+        subtitle: '22 min • 3 tours (40s effort / 20s repos)',
+        exercises: [
+          { name: 'Step-Touch dynamique avec tirage bras', detail: 'Pas chassés fluides en tirant les coudes derrière' },
+          { name: 'Squats au poids du corps', detail: 'Poids dans les talons, buste fier et droit' },
+          { name: 'Planche sur avant-bras (ou genoux)', detail: 'Alignement tête-bassin, respiration calme' },
+          { name: 'Jumping Jacks sans impact (pas latéraux)', detail: 'Bras levés au-dessus de la tête sans sauter' }
+        ]
+      },
+      3: {
+        dayName: 'Mer',
+        title: 'Mobilité Colonne & Récupération Active',
+        subtitle: '15 min • Mouvements lents et contrôlés',
+        exercises: [
+          { name: 'Dos rond / Dos creux (Cat-Cow)', detail: 'Mobilise chaque vertèbre en douceur' },
+          { name: 'Enfilage d\'aiguille (Rotation thoracique)', detail: 'Ouvre le haut du dos des deux côtés' },
+          { name: 'Pont fessier (Glute Bridge)', detail: 'Renforce l\'arrière du corps et soulage les lombaires' },
+          { name: 'Étirement pectoraux contre encadrement porte', detail: '30s par côté pour ouvrir les épaules' }
+        ]
+      },
+      4: {
+        dayName: 'Jeu',
+        title: 'Renforcement Dos & Gainage Profond',
+        subtitle: '20 min • 3 tours (40s effort / 20s repos)',
+        exercises: [
+          { name: 'Superman alterné au sol', detail: 'Décolle légèrement buste et jambes sans forcer le cou' },
+          { name: 'Fentes arrière alternées', detail: 'Grand pas en arrière, buste bien droit' },
+          { name: 'Dead Bug (Gainage sur le dos)', detail: 'Bas du dos plaqué au sol, mouvements lents' },
+          { name: 'Boxe dans le vide (Shadow Boxing)', detail: 'Cardio haut du corps rapide et tonique' }
+        ]
+      },
+      5: {
+        dayName: 'Ven',
+        title: 'Circuit Énergie & Posture',
+        subtitle: '20 min • 3 tours (40s effort / 20s repos)',
+        exercises: [
+          { name: 'Good Morning (Charrière de hanche)', detail: 'Mains derrière la tête, coudes ouverts, dos plat' },
+          { name: 'Marche de l\'ours sur place (Bear Hold)', detail: 'Genoux décollés de 2 cm, épaules repoussées' },
+          { name: 'Talons-fesses dynamiques', detail: 'Rythme régulier, ouvre la cage thoracique' },
+          { name: 'Planche latérale adaptée (20s / côté)', detail: 'Renforce la taille et stabilise le bassin' }
+        ]
+      },
+      6: {
+        dayName: 'Sam',
+        title: 'Marche Active en Extérieur / Famille',
+        subtitle: '25 à 30 min • Allure soutenue',
+        exercises: [
+          { name: '5 min d\'échauffement à allure calme', detail: 'Détends les épaules et respire profondément' },
+          { name: '15 min de marche rapide (pas dynamiques)', detail: 'Balance naturellement les bras pour engager le dos' },
+          { name: '5 min de retour au calme + étirements mollets', detail: 'Hydrate-toi bien juste après' }
+        ]
+      },
+      0: {
+        dayName: 'Dim',
+        title: 'Repos & Étirements Posturaux',
+        subtitle: '15 min • Détente complète',
+        exercises: [
+          { name: 'Posture de l\'enfant (Child\'s Pose)', detail: 'Bras loin devant pour étirer tout le grand dorsal' },
+          { name: 'Cercles d\'épaules & étirement trapèzes', detail: 'Relâche toutes les tensions de la semaine' },
+          { name: 'Respiration abdominale profonde (3 min)', detail: 'Inspire 4s, expire 6s pour apaiser le corps' }
+        ]
+      }
+    };
+
+    let customWorkoutOverride = null;
+
+    function renderSportSection() {
+      const selector = document.getElementById('sport-days-selector');
+      const orderedDays = [1, 2, 3, 4, 5, 6, 0]; // Lun -> Dim
+      selector.innerHTML = '';
+
+      orderedDays.forEach(dayIdx => {
+        const w = weeklyWorkouts[dayIdx];
+        const isSelected = appState.selectedSportDay === dayIdx;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => {
+          appState.selectedSportDay = dayIdx;
+          customWorkoutOverride = null;
+          saveState();
+          renderSportSection();
+        };
+        btn.className = `py-2 rounded-xl text-xs font-bold transition tap-scale ${
+          isSelected
+            ? 'bg-brand-600 text-white shadow-xs'
+            : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+        }`;
+        btn.textContent = w.dayName;
+        selector.appendChild(btn);
+      });
+
+      const currentWorkout = customWorkoutOverride || weeklyWorkouts[appState.selectedSportDay];
+      document.getElementById('workout-title').textContent = currentWorkout.title;
+      document.getElementById('workout-subtitle').textContent = currentWorkout.subtitle;
+
+      const listEl = document.getElementById('exercises-list');
+      listEl.innerHTML = '';
+
+      const todayKey = getTodayKey();
+      if (!appState.completedExercises[todayKey]) {
+        appState.completedExercises[todayKey] = {};
+      }
+
+      currentWorkout.exercises.forEach((ex, idx) => {
+        const exId = `${appState.selectedSportDay}_${idx}`;
+        const isChecked = !!appState.completedExercises[todayKey][exId];
+
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.onclick = () => {
+          appState.completedExercises[todayKey][exId] = !isChecked;
+          saveState();
+          renderSportSection();
+        };
+        item.className = `w-full text-left p-3 rounded-xl border flex items-center gap-3 transition tap-scale ${
+          isChecked ? 'bg-brand-50/50 border-brand-200' : 'bg-slate-50/70 border-slate-100 hover:bg-slate-100/70'
+        }`;
+
+        item.innerHTML = `
+          <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition ${
+            isChecked ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 bg-white'
+          }">
+            ${isChecked ? '<i class="ph-bold ph-check text-xs"></i>' : `<span class="text-[10px] font-bold text-slate-400">${idx + 1}</span>`}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold ${isChecked ? 'line-through text-slate-400' : 'text-slate-800'}">${ex.name}</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">${ex.detail}</p>
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function completeWorkoutSession() {
+      const today = getTodayData();
+      today.workoutDone = true;
+      saveState();
+      renderHome();
+      showToast('Séance validée dans tes Healthy Habits ! 🏆');
+    }
+
+    async function adaptWorkoutWithAI(constraint) {
+      const loading = document.getElementById('sport-ai-loading');
+      loading.classList.remove('hidden');
+
+      const baseWorkout = weeklyWorkouts[appState.selectedSportDay];
+      const payload = {
+        contents: [{
+          parts: [{
+            text: `Adapte cette séance de sport maison ("${baseWorkout.title}") selon la demande de l'utilisatrice : "${constraint}". Garde le focus sur le renforcement du haut du dos, la posture des épaules, le gainage et le cardio doux sans matériel. Propose 3 à 4 exercices simples.`
+          }]
+        }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              title: { type: "STRING" },
+              subtitle: { type: "STRING" },
+              exercises: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    name: { type: "STRING" },
+                    detail: { type: "STRING" }
+                  },
+                  required: ["name", "detail"]
+                }
+              }
+            },
+            required: ["title", "subtitle", "exercises"]
+          }
+        }
+      };
+
+      try {
+        const result = await callGeminiWithBackoff(payload);
+        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        customWorkoutOverride = JSON.parse(text);
+        renderSportSection();
+        showToast('Séance adaptée à ton énergie du jour ✨');
+      } catch (err) {
+        customWorkoutOverride = {
+          title: 'Séance Express Douceur & Posture (15 min)',
+          subtitle: '2 tours • Rythme calme sans impact',
+          exercises: [
+            { name: 'Ouverture des épaules & bras en W', detail: '30s lentement en respirant profondément' },
+            { name: 'Dos rond / Dos creux à quatre pattes', detail: '40s pour délier le haut du dos' },
+            { name: 'Marche calme sur place + balancement bras', detail: '40s pour relancer la circulation' }
+          ]
+        };
+        renderSportSection();
+        showToast('Séance adaptée en mode douceur ✨');
+      } finally {
+        loading.classList.add('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 6. CHRONOMÈTRE / MINUTEUR D'ENTRAÎNEMENT (40s/20s ou 30s/15s)
+    // =========================================================================
+    let timerConfig = { work: 40, rest: 20 };
+    let timerState = {
+      isRunning: false,
+      isWorkPhase: true,
+      secondsLeft: 40,
+      intervalId: null
+    };
+
+    function updateTimerUI() {
+      const mins = String(Math.floor(timerState.secondsLeft / 60)).padStart(2, '0');
+      const secs = String(timerState.secondsLeft % 60).padStart(2, '0');
+      document.getElementById('timer-display').textContent = `${mins}:${secs}`;
+
+      const phaseDot = document.getElementById('timer-phase-dot');
+      const phaseLabel = document.getElementById('timer-phase-label');
+      const playIcon = document.getElementById('timer-play-icon');
+      const playText = document.getElementById('timer-play-text');
+      const btnToggle = document.getElementById('btn-timer-toggle');
+
+      if (timerState.isWorkPhase) {
+        phaseDot.className = 'w-2.5 h-2.5 rounded-full bg-brand-500';
+        phaseLabel.textContent = `EFFORT • ${timerConfig.work}s`;
+      } else {
+        phaseDot.className = 'w-2.5 h-2.5 rounded-full bg-warm-500';
+        phaseLabel.textContent = `REPOS • ${timerConfig.rest}s`;
+      }
+
+      if (timerState.isRunning) {
+        playIcon.className = 'ph-fill ph-pause';
+        playText.textContent = 'Pause';
+        btnToggle.classList.replace('bg-brand-500', 'bg-warm-500');
+        btnToggle.classList.replace('hover:bg-brand-600', 'hover:bg-warm-600');
+      } else {
+        playIcon.className = 'ph-fill ph-play';
+        playText.textContent = 'Démarrer';
+        btnToggle.classList.replace('bg-warm-500', 'bg-brand-500');
+        btnToggle.classList.replace('hover:bg-warm-600', 'hover:bg-brand-600');
+      }
+    }
+
+    function playBeep(freq = 660) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.25);
+      } catch (e) {}
+    }
+
+    function toggleTimer() {
+      if (timerState.isRunning) {
+        clearInterval(timerState.intervalId);
+        timerState.isRunning = false;
+      } else {
+        timerState.isRunning = true;
+        playBeep(700);
+        timerState.intervalId = setInterval(() => {
+          timerState.secondsLeft -= 1;
+          if (timerState.secondsLeft <= 0) {
+            timerState.isWorkPhase = !timerState.isWorkPhase;
+            timerState.secondsLeft = timerState.isWorkPhase ? timerConfig.work : timerConfig.rest;
+            playBeep(timerState.isWorkPhase ? 880 : 520);
+          }
+          updateTimerUI();
+        }, 1000);
+      }
+      updateTimerUI();
+    }
+
+    function resetTimer() {
+      clearInterval(timerState.intervalId);
+      timerState.isRunning = false;
+      timerState.isWorkPhase = true;
+      timerState.secondsLeft = timerConfig.work;
+      updateTimerUI();
+    }
+
+    function toggleTimerMode() {
+      if (timerConfig.work === 40) {
+        timerConfig = { work: 30, rest: 15 };
+      } else {
+        timerConfig = { work: 40, rest: 20 };
+      }
+      document.getElementById('timer-mode-text').textContent = `${timerConfig.work}s / ${timerConfig.rest}s`;
+      resetTimer();
+    }
+
+    // =========================================================================
+    // 7. INITIALISATION AU CHARGEMENT
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('current-date').textContent = formatFrenchDate();
+      renderHome();
+      renderSportSection();
+      updateTimerUI();
+    });
+  </script>
+</body>
+</html>
