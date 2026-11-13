@@ -69,8 +69,14 @@
     }
 
     /* Effet de pression tactile */
+    .tap-scale {
+      cursor: pointer;
+    }
     .tap-scale:active {
       transform: scale(0.97);
+    }
+    button {
+      cursor: pointer;
     }
   </style>
 </head>
@@ -253,24 +259,105 @@
         </div>
 
         <!-- Carte Synchronisation Google Sheets -->
-        <div class="bg-white p-4 rounded-2xl border border-brand-200/80 shadow-xs space-y-2.5">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-lg">
-                <i class="ph-fill ph-table"></i>
-              </div>
-              <div>
-                <h3 class="font-bold text-slate-900 text-sm">Base de données Google Sheets</h3>
-                <p id="last-sync-label" class="text-[11px] text-slate-500">Sauvegarde cloud & cache local actifs</p>
-              </div>
+        <div class="bg-white p-4 rounded-2xl border border-brand-200/80 shadow-xs flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-lg shrink-0">
+              <i class="ph-fill ph-cloud-check"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Sauvegarde automatique active</h3>
+              <p id="last-sync-label" class="text-[11px] text-slate-500">Synchronisé avec Google Sheets</p>
             </div>
           </div>
-          <button type="button" onclick="saveTodayToGoogleSheets()" id="btn-save-sheets" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-brand-600/20 flex items-center justify-center gap-2 tap-scale transition">
-            <i class="ph-bold ph-cloud-arrow-up text-base" id="btn-save-sheets-icon"></i>
-            <span id="btn-save-sheets-text">Enregistrer ma journée dans Google Sheets</span>
-          </button>
+          <span id="auto-save-badge" class="text-[11px] font-bold bg-brand-50 text-brand-700 px-2.5 py-1 rounded-full whitespace-nowrap">
+            Auto-save ✓
+          </span>
         </div>
 
+      </section>
+
+      <!-- ========================================== -->
+      <!-- ONGLET 2 : COACH REPAS IA (CUISINE MALGACHE) -->
+      <!-- ========================================== -->
+      <section id="tab-coach" class="tab-content hidden space-y-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl shrink-0">
+              <i class="ph-fill ph-bowl-food"></i>
+            </div>
+            <div>
+              <h2 class="font-bold text-slate-900 text-base">Coach Repas Familial</h2>
+              <p class="text-xs text-slate-500">Dosage à l'œil nu (sans balance) & zéro sucre</p>
+            </div>
+          </div>
+
+          <!-- Raccourcis plats malgaches -->
+          <div>
+            <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Plats fréquents en famille :</p>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" onclick="fillMealExample('Vary sy ravitoto sy henakisoa')" class="text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 px-3 py-1.5 rounded-xl transition tap-scale">
+                🥬 Vary sy ravitoto
+              </button>
+              <button type="button" onclick="fillMealExample('Ro mazava sy akoho gasy')" class="text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 px-3 py-1.5 rounded-xl transition tap-scale">
+                🍗 Ro mazava & akoho
+              </button>
+              <button type="button" onclick="fillMealExample('Lasopy légumes sy trondro')" class="text-xs font-semibold bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 px-3 py-1.5 rounded-xl transition tap-scale">
+                🍲 Lasopy & trondro
+              </button>
+              <button type="button" onclick="fillMealExample('Thé du matin avec 1 mofo gasy')" class="text-xs font-semibold bg-warm-50 hover:bg-warm-100 text-warm-700 px-3 py-1.5 rounded-xl transition tap-scale">
+                ☕ Thé & Mofo gasy
+              </button>
+            </div>
+          </div>
+
+          <!-- Formulaire d'analyse -->
+          <form onsubmit="analyzeMealWithAI(event)" class="space-y-2.5 pt-1">
+            <textarea id="meal-input" rows="2" placeholder="Ex: Ce midi on mange vary amin'anana sy kitoza..." required
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition"></textarea>
+            <button type="submit" id="btn-analyze-meal" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-brand-600/20 flex items-center justify-center gap-2 tap-scale transition">
+              <i class="ph-fill ph-sparkle"></i>
+              <span>Comment doser mon assiette ?</span>
+            </button>
+          </form>
+
+          <!-- Chargement IA -->
+          <div id="meal-ai-loading" class="hidden py-3 flex items-center justify-center gap-2 text-xs font-semibold text-brand-600">
+            <span class="w-4 h-4 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin"></span>
+            <span>Calcul des repères visuels...</span>
+          </div>
+        </div>
+
+        <!-- Résultat IA -->
+        <div id="meal-ai-result" class="hidden bg-white p-4 rounded-2xl border border-brand-200 shadow-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <span class="text-xs font-bold text-slate-800">Repères dans ton assiette</span>
+            <span id="ai-meal-tag" class="text-[11px] font-bold bg-brand-50 text-brand-700 px-2.5 py-0.5 rounded-full">Équilibré</span>
+          </div>
+          <div id="ai-portions-grid" class="space-y-2 text-xs"></div>
+          <div id="ai-advice-box" class="bg-warm-50/80 border border-warm-100 p-3 rounded-xl text-xs text-slate-700"></div>
+        </div>
+
+        <!-- Mémo Visuel Universel -->
+        <div class="bg-slate-900 text-white p-4 rounded-2xl space-y-2.5">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-brand-400">Règle d'or sans balance</h3>
+          <div class="grid grid-cols-3 gap-2 text-center pt-1">
+            <div class="bg-white/10 p-2.5 rounded-xl">
+              <span class="text-lg block">✊</span>
+              <p class="text-xs font-bold mt-1">1 Poing</p>
+              <p class="text-[10px] text-slate-300">Riz (1/4)</p>
+            </div>
+            <div class="bg-white/10 p-2.5 rounded-xl">
+              <span class="text-lg block">✋</span>
+              <p class="text-xs font-bold mt-1">1 Paume</p>
+              <p class="text-[10px] text-slate-300">Laoka (1/4)</p>
+            </div>
+            <div class="bg-white/10 p-2.5 rounded-xl">
+              <span class="text-lg block">👐</span>
+              <p class="text-xs font-bold mt-1">2 Mains</p>
+              <p class="text-[10px] text-slate-300">Brèdes (1/2)</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ========================================== -->
@@ -421,7 +508,47 @@
     };
 
     let appState = loadState();
-// ... existing code ... -->
+    let autoSaveTimeout = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return JSON.parse(JSON.stringify(defaultState));
+        const parsed = JSON.parse(raw);
+        return {
+          ...JSON.parse(JSON.stringify(defaultState)),
+          ...parsed
+        };
+      } catch (e) {
+        console.warn('Erreur lecture localStorage:', e);
+        return JSON.parse(JSON.stringify(defaultState));
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('Erreur écriture localStorage:', e);
+      }
+    }
+
+    // Déclenche la sauvegarde locale immédiate + sauvegarde Google Sheets automatique (debounce 1.5s)
+    function persistAndAutoSync() {
+      saveState();
+      setSyncStatus('loading', 'Sauvegarde auto...');
+      const badge = document.getElementById('auto-save-badge');
+      if (badge) {
+        badge.textContent = 'Enregistrement...';
+        badge.className = 'text-[11px] font-bold bg-warm-50 text-warm-600 px-2.5 py-1 rounded-full whitespace-nowrap';
+      }
+
+      clearTimeout(autoSaveTimeout);
+      autoSaveTimeout = setTimeout(() => {
+        saveTodayToGoogleSheets(true);
+      }, 1500);
+    }
+
     function getTodayData() {
       const key = getTodayKey();
       if (!appState.dailyLogs[key]) {
@@ -541,11 +668,11 @@
         appState.lastSyncTime = nowTime;
         saveState();
         renderHome();
-        setSyncStatus('synced', 'Synchronisé avec Sheets');
+        setSyncStatus('synced', 'Synchronisé');
 
         const lastSyncEl = document.getElementById('last-sync-label');
         if (lastSyncEl) {
-          lastSyncEl.textContent = `Dernière synchro réussie à ${nowTime}`;
+          lastSyncEl.textContent = `Dernière synchro à ${nowTime}`;
         }
         if (manualTrigger) {
           showToast('Données synchronisées depuis Google Sheets ✅');
@@ -559,11 +686,8 @@
       }
     }
 
-    async function saveTodayToGoogleSheets() {
-      const btn = document.getElementById('btn-save-sheets');
-      const btnText = document.getElementById('btn-save-sheets-text');
-      const btnIcon = document.getElementById('btn-save-sheets-icon');
-
+    async function saveTodayToGoogleSheets(isAuto = true) {
+      const badge = document.getElementById('auto-save-badge');
       const today = getTodayData();
       const todayFr = getTodayFrDate();
       const eauLitres = parseFloat((today.water * 0.25).toFixed(2));
@@ -580,14 +704,8 @@
         eau: eauLitres
       };
 
-      // Sauvegarde locale immédiate avant l'envoi réseau
       saveState();
-
-      btn.disabled = true;
-      btn.classList.add('opacity-75');
-      btnIcon.className = 'ph-bold ph-spinner animate-spin text-base';
-      btnText.textContent = 'Enregistrement dans Sheets...';
-      setSyncStatus('loading', 'Envoi...');
+      setSyncStatus('loading', 'Sauvegarde auto...');
 
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
@@ -601,21 +719,25 @@
         appState.lastSyncTime = nowTime;
         saveState();
 
-        setSyncStatus('synced', 'Synchronisé avec Sheets');
+        setSyncStatus('synced', 'Sauvegardé ✓');
+        if (badge) {
+          badge.textContent = 'Sauvegardé ✓';
+          badge.className = 'text-[11px] font-bold bg-brand-50 text-brand-700 px-2.5 py-1 rounded-full whitespace-nowrap';
+        }
         const lastSyncEl = document.getElementById('last-sync-label');
         if (lastSyncEl) {
-          lastSyncEl.textContent = `Enregistré dans Google Sheets à ${nowTime}`;
+          lastSyncEl.textContent = `Sauvegardé dans Sheets à ${nowTime}`;
         }
-        showToast('Journée enregistrée dans Google Sheets ! 📊');
+        if (!isAuto) {
+          showToast('Journée enregistrée dans Google Sheets ! 📊');
+        }
       } catch (err) {
         console.error('Erreur POST Google Sheets:', err);
         setSyncStatus('offline', 'Cache local');
-        showToast('Sauvegardé en local (réessaie quand tu auras du réseau)');
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove('opacity-75');
-        btnIcon.className = 'ph-bold ph-cloud-arrow-up text-base';
-        btnText.textContent = 'Enregistrer ma journée dans Google Sheets';
+        if (badge) {
+          badge.textContent = 'Hors-ligne';
+          badge.className = 'text-[11px] font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full whitespace-nowrap';
+        }
       }
     }
 
@@ -694,8 +816,8 @@
         showToast('Habitude validée ! Continue comme ça 💪');
       }
 
-      saveState();
       renderHome();
+      persistAndAutoSync();
     }
 
     function changeWater(delta) {
@@ -704,15 +826,15 @@
       if (today.water === 8 && delta > 0) {
         showToast('Objectif 2L d\'eau atteint ! 💧');
       }
-      saveState();
       renderHome();
+      persistAndAutoSync();
     }
 
     function resetTodayPrompt() {
       const key = getTodayKey();
       appState.dailyLogs[key] = { noSugar: false, balancedPlate: false, workoutDone: false, water: 0, todayWeight: null };
-      saveState();
       renderHome();
+      persistAndAutoSync();
       showToast('Compteurs du jour remis à zéro');
     }
 
@@ -740,8 +862,8 @@
       }
 
       input.value = '';
-      saveState();
       renderWeightChart();
+      persistAndAutoSync();
       showToast(`Poids enregistré : ${val.toFixed(1)} kg`);
     }
 
@@ -861,8 +983,8 @@
         btn.type = 'button';
         btn.onclick = () => {
           today.water = (today.water === i) ? i - 1 : i;
-          saveState();
           renderHome();
+          persistAndAutoSync();
         };
         btn.className = `h-8 rounded-lg flex items-center justify-center transition tap-scale ${
           filled ? 'bg-sky-500 text-white shadow-xs' : 'bg-slate-100 text-slate-300 hover:bg-slate-200'
@@ -1178,8 +1300,8 @@
     function completeWorkoutSession() {
       const today = getTodayData();
       today.workoutDone = true;
-      saveState();
       renderHome();
+      persistAndAutoSync();
       showToast('Séance validée dans tes Healthy Habits ! 🏆');
     }
 
