@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#059669" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Sakafo & Balance" />
@@ -81,8 +82,15 @@
     <!-- En-tête supérieur fixe -->
     <header class="bg-white/90 backdrop-blur-md border-b border-slate-100 px-5 pt-5 pb-3.5 flex items-center justify-between sticky top-0 z-20">
       <div>
-        <p id="current-date" class="text-xs font-medium text-slate-400 uppercase tracking-wider">Aujourd'hui</p>
-        <h1 class="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5">
+        <div class="flex items-center gap-2">
+          <p id="current-date" class="text-xs font-medium text-slate-400 uppercase tracking-wider">Aujourd'hui</p>
+          <button onclick="syncFromGoogleSheets(true)" id="sheets-status-btn" title="Synchroniser avec Google Sheets" class="inline-flex items-center gap-1 text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full transition tap-scale">
+            <span id="sheets-status-dot" class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span id="sheets-status-text">Sheets...</span>
+            <i id="sheets-sync-icon" class="ph-bold ph-arrows-clockwise text-[10px]"></i>
+          </button>
+        </div>
+        <h1 class="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5 mt-0.5">
           <span>Sakafo & Balance</span>
           <span class="inline-block w-2 h-2 rounded-full bg-brand-500"></span>
         </h1>
@@ -244,85 +252,23 @@
           </form>
         </div>
 
-      </section>
-
-      <!-- ========================================== -->
-      <!-- ONGLET 2 : COACH IA ASSIETTE MALGACHE      -->
-      <!-- ========================================== -->
-      <section id="tab-coach" class="tab-content hidden space-y-4">
-        
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-          <div class="flex items-center gap-3 mb-2">
-            <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center text-xl">
-              <i class="ph-fill ph-sparkle"></i>
-            </div>
-            <div>
-              <h2 class="font-bold text-slate-900 text-base">Coach Assiette Familiale</h2>
-              <p class="text-xs text-slate-500">Dose ton repas malgache à l'œil nu, sans balance</p>
+        <!-- Carte Synchronisation Google Sheets -->
+        <div class="bg-white p-4 rounded-2xl border border-brand-200/80 shadow-xs space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-lg">
+                <i class="ph-fill ph-table"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-900 text-sm">Base de données Google Sheets</h3>
+                <p id="last-sync-label" class="text-[11px] text-slate-500">Sauvegarde cloud & cache local actifs</p>
+              </div>
             </div>
           </div>
-          <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
-            Indique le plat préparé pour la famille (ou une envie de goûter/boisson). Je t'indique exactement comment remplir ton assiette et gérer le sucre ou les graisses.
-          </p>
-        </div>
-
-        <!-- Exemples rapides en un clic -->
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Exemples rapides :</p>
-          <div class="flex flex-wrap gap-2">
-            <button onclick="fillMealExample('Vary sy ravitoto sy henakisoa')" class="text-xs font-medium bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-700 border border-slate-200 px-3 py-1.5 rounded-full transition tap-scale">
-              🍃 Vary sy ravitoto
-            </button>
-            <button onclick="fillMealExample('Ro mazava sy anamamy sy akoho')" class="text-xs font-medium bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-700 border border-slate-200 px-3 py-1.5 rounded-full transition tap-scale">
-              🍲 Ro mazava sy akoho
-            </button>
-            <button onclick="fillMealExample('Akoho sy voanio miaraka amin\'ny vary')" class="text-xs font-medium bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-700 border border-slate-200 px-3 py-1.5 rounded-full transition tap-scale">
-              🥥 Akoho sy voanio
-            </button>
-            <button onclick="fillMealExample('Thé du matin et 2 mofo gasy')" class="text-xs font-medium bg-white hover:bg-warm-50 text-slate-700 hover:text-warm-700 border border-slate-200 px-3 py-1.5 rounded-full transition tap-scale">
-              🥞 Thé & Mofo gasy
-            </button>
-          </div>
-        </div>
-
-        <!-- Formulaire de requête IA -->
-        <form onsubmit="analyzeMealWithAI(event)" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-          <label for="meal-input" class="block text-xs font-bold text-slate-700">Qu'y a-t-il au menu aujourd'hui ?</label>
-          <textarea id="meal-input" rows="2" required placeholder="Ex: Vary sosoa sy kitoza, ou Lasopy légumes sy mofo..."
-            class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition resize-none"></textarea>
-          
-          <button type="submit" id="btn-analyze-meal" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-brand-600/20 flex items-center justify-center gap-2 tap-scale transition">
-            <i class="ph-bold ph-magic-wand text-base"></i>
-            <span>Comment doser mon assiette ?</span>
+          <button type="button" onclick="saveTodayToGoogleSheets()" id="btn-save-sheets" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-brand-600/20 flex items-center justify-center gap-2 tap-scale transition">
+            <i class="ph-bold ph-cloud-arrow-up text-base" id="btn-save-sheets-icon"></i>
+            <span id="btn-save-sheets-text">Enregistrer ma journée dans Google Sheets</span>
           </button>
-        </form>
-
-        <!-- Zone de chargement IA -->
-        <div id="meal-ai-loading" class="hidden bg-white p-6 rounded-2xl border border-slate-200/80 text-center space-y-2">
-          <div class="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto"></div>
-          <p class="text-xs font-semibold text-slate-600">Ton coach prépare ton dosage visuel...</p>
-        </div>
-
-        <!-- Résultat IA structuré -->
-        <div id="meal-ai-result" class="hidden space-y-3">
-          <div class="bg-white p-4 rounded-2xl border-2 border-brand-500/30 shadow-sm space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <span class="text-xs font-extrabold text-brand-700 uppercase tracking-wider flex items-center gap-1.5">
-                <i class="ph-fill ph-check-circle text-base"></i> Guide Visuel Sans Balance
-              </span>
-              <span id="ai-meal-tag" class="text-[11px] font-semibold bg-brand-50 text-brand-700 px-2.5 py-0.5 rounded-full">Équilibré</span>
-            </div>
-
-            <!-- Repères visuels (Poignée, Paume, Légumes) -->
-            <div id="ai-portions-grid" class="grid grid-cols-1 gap-2.5 text-xs">
-              <!-- Rempli dynamiquement -->
-            </div>
-
-            <!-- Alerte sucre / graisses & Conseil -->
-            <div id="ai-advice-box" class="bg-warm-50 border border-warm-100 p-3 rounded-xl text-xs text-slate-700 leading-relaxed">
-              <!-- Rempli dynamiquement -->
-            </div>
-          </div>
         </div>
 
       </section>
@@ -448,50 +394,34 @@
   <!-- Logique JavaScript complète -->
   <script>
     // =========================================================================
-    // 1. GESTION DE L'ÉTAT & LOCALSTORAGE
+    // 1. GESTION DE L'ÉTAT, CACHE LOCAL & GOOGLE SHEETS
     // =========================================================================
     const STORAGE_KEY = 'sakafo_balance_v1';
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwu2hliMdS_Tn0u2eG82Mg_d4SZkBU-ulzY-rV2lLNDi_HjCFRaE707SKufF4k2hKnCfA/exec";
 
     function getTodayKey() {
       const now = new Date();
       return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     }
 
+    function getTodayFrDate() {
+      return new Date().toLocaleDateString('fr-FR');
+    }
+
     const defaultState = {
-      streak: 3, // Exemple initial motivant modifiable automatiquement
+      streak: 0,
       lastStreakDate: '',
-      dailyLogs: {}, // { 'YYYY-MM-DD': { noSugar: bool, balancedPlate: bool, workoutDone: bool, water: number } }
+      dailyLogs: {}, // { 'YYYY-MM-DD': { noSugar: bool, balancedPlate: bool, workoutDone: bool, water: number, todayWeight: number|null } }
       weightHistory: [
-        { date: 'J-14', weight: 71.2 },
-        { date: 'J-7', weight: 70.5 },
-        { date: 'Hier', weight: 70.1 }
+        { date: 'Départ', weight: 70.5 }
       ],
       selectedSportDay: new Date().getDay(), // 0 = Dimanche ... 6 = Samedi
-      completedExercises: {}
+      completedExercises: {},
+      lastSyncTime: null
     };
 
     let appState = loadState();
-
-    function loadState() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          return { ...defaultState, ...JSON.parse(saved) };
-        }
-      } catch (e) {
-        console.warn('Erreur lecture localStorage:', e);
-      }
-      return JSON.parse(JSON.stringify(defaultState));
-    }
-
-    function saveState() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-      } catch (e) {
-        console.warn('Erreur sauvegarde localStorage:', e);
-      }
-    }
-
+// ... existing code ... -->
     function getTodayData() {
       const key = getTodayKey();
       if (!appState.dailyLogs[key]) {
@@ -499,10 +429,194 @@
           noSugar: false,
           balancedPlate: false,
           workoutDone: false,
-          water: 0
+          water: 0,
+          todayWeight: null
         };
       }
       return appState.dailyLogs[key];
+    }
+
+    function setSyncStatus(status, labelText) {
+      const dot = document.getElementById('sheets-status-dot');
+      const text = document.getElementById('sheets-status-text');
+      const icon = document.getElementById('sheets-sync-icon');
+      if (!dot || !text) return;
+
+      text.textContent = labelText;
+      icon.classList.remove('animate-spin');
+
+      if (status === 'loading') {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
+        icon.classList.add('animate-spin');
+      } else if (status === 'synced') {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-brand-500';
+      } else {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-slate-400';
+      }
+    }
+
+    function parseSheetDate(rawVal) {
+      if (!rawVal) return '';
+      if (typeof rawVal === 'string' && rawVal.includes('/')) {
+        return rawVal.trim();
+      }
+      const parsed = new Date(rawVal);
+      if (!isNaN(parsed.getTime())) {
+        return parsed.toLocaleDateString('fr-FR');
+      }
+      return String(rawVal).trim();
+    }
+
+    function isYesValue(val) {
+      if (typeof val === 'boolean') return val;
+      if (!val) return false;
+      const s = String(val).trim().toLowerCase();
+      return s === 'oui' || s === 'yes' || s === 'true' || s === '1';
+    }
+
+    async function syncFromGoogleSheets(manualTrigger = false) {
+      setSyncStatus('loading', 'Sync...');
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const rows = await response.json();
+
+        if (Array.isArray(rows) && rows.length > 0) {
+          const todayFr = getTodayFrDate();
+          const todayData = getTodayData();
+          const weightMap = new Map();
+          const sugarByDate = new Map();
+
+          rows.forEach(row => {
+            const dateStr = parseSheetDate(row.Date);
+            if (!dateStr) return;
+
+            const poidsNum = parseFloat(String(row.Poids || '').replace(',', '.'));
+            if (!isNaN(poidsNum) && poidsNum >= 30 && poidsNum <= 250) {
+              const shortLabel = dateStr.split('/').slice(0, 2).join('/');
+              weightMap.set(dateStr, { date: shortLabel || dateStr, weight: poidsNum });
+            }
+
+            const zeroSucreBool = isYesValue(row.ZeroSucre);
+            sugarByDate.set(dateStr, zeroSucreBool);
+
+            // Si une ligne correspond à aujourd'hui, mettre à jour l'état local du jour
+            if (dateStr === todayFr) {
+              todayData.noSugar = zeroSucreBool;
+              todayData.balancedPlate = isYesValue(row.AssietteEquilibree);
+              todayData.workoutDone = isYesValue(row.Sport);
+              if (!isNaN(poidsNum) && poidsNum > 0) {
+                todayData.todayWeight = poidsNum;
+              }
+              const eauVal = parseFloat(String(row.EauLitres || '').replace(',', '.'));
+              if (!isNaN(eauVal) && eauVal >= 0) {
+                todayData.water = Math.min(8, Math.round(eauVal / 0.25));
+              }
+            }
+          });
+
+          // Mettre à jour la courbe de poids avec les 8 dernières mesures uniques par date
+          const extractedWeights = Array.from(weightMap.values());
+          if (extractedWeights.length > 0) {
+            appState.weightHistory = extractedWeights.slice(-8);
+          }
+
+          // Recalculer le streak Zéro Sucre à partir des lignes consécutives les plus récentes
+          const uniqueSugarEntries = Array.from(sugarByDate.values());
+          let calculatedStreak = 0;
+          for (let i = uniqueSugarEntries.length - 1; i >= 0; i--) {
+            if (uniqueSugarEntries[i] === true) {
+              calculatedStreak++;
+            } else {
+              break;
+            }
+          }
+          appState.streak = calculatedStreak;
+          if (todayData.noSugar) {
+            appState.lastStreakDate = getTodayKey();
+          }
+        }
+
+        const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        appState.lastSyncTime = nowTime;
+        saveState();
+        renderHome();
+        setSyncStatus('synced', 'Synchronisé avec Sheets');
+
+        const lastSyncEl = document.getElementById('last-sync-label');
+        if (lastSyncEl) {
+          lastSyncEl.textContent = `Dernière synchro réussie à ${nowTime}`;
+        }
+        if (manualTrigger) {
+          showToast('Données synchronisées depuis Google Sheets ✅');
+        }
+      } catch (err) {
+        console.warn('Synchronisation Sheets indisponible (mode hors-ligne actif):', err);
+        setSyncStatus('offline', 'Cache local');
+        if (manualTrigger) {
+          showToast('Mode hors-ligne : données lues depuis le cache local');
+        }
+      }
+    }
+
+    async function saveTodayToGoogleSheets() {
+      const btn = document.getElementById('btn-save-sheets');
+      const btnText = document.getElementById('btn-save-sheets-text');
+      const btnIcon = document.getElementById('btn-save-sheets-icon');
+
+      const today = getTodayData();
+      const todayFr = getTodayFrDate();
+      const eauLitres = parseFloat((today.water * 0.25).toFixed(2));
+      const poidsDuJour = today.todayWeight !== null && today.todayWeight !== undefined
+        ? today.todayWeight
+        : "";
+
+      const payload = {
+        date: todayFr,
+        poids: poidsDuJour,
+        zeroSucre: Boolean(today.noSugar),
+        assiette: Boolean(today.balancedPlate),
+        sport: Boolean(today.workoutDone),
+        eau: eauLitres
+      };
+
+      // Sauvegarde locale immédiate avant l'envoi réseau
+      saveState();
+
+      btn.disabled = true;
+      btn.classList.add('opacity-75');
+      btnIcon.className = 'ph-bold ph-spinner animate-spin text-base';
+      btnText.textContent = 'Enregistrement dans Sheets...';
+      setSyncStatus('loading', 'Envoi...');
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
+        const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        appState.lastSyncTime = nowTime;
+        saveState();
+
+        setSyncStatus('synced', 'Synchronisé avec Sheets');
+        const lastSyncEl = document.getElementById('last-sync-label');
+        if (lastSyncEl) {
+          lastSyncEl.textContent = `Enregistré dans Google Sheets à ${nowTime}`;
+        }
+        showToast('Journée enregistrée dans Google Sheets ! 📊');
+      } catch (err) {
+        console.error('Erreur POST Google Sheets:', err);
+        setSyncStatus('offline', 'Cache local');
+        showToast('Sauvegardé en local (réessaie quand tu auras du réseau)');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75');
+        btnIcon.className = 'ph-bold ph-cloud-arrow-up text-base';
+        btnText.textContent = 'Enregistrer ma journée dans Google Sheets';
+      }
     }
 
     // =========================================================================
@@ -596,7 +710,7 @@
 
     function resetTodayPrompt() {
       const key = getTodayKey();
-      appState.dailyLogs[key] = { noSugar: false, balancedPlate: false, workoutDone: false, water: 0 };
+      appState.dailyLogs[key] = { noSugar: false, balancedPlate: false, workoutDone: false, water: 0, todayWeight: null };
       saveState();
       renderHome();
       showToast('Compteurs du jour remis à zéro');
@@ -608,8 +722,11 @@
       const val = parseFloat(input.value);
       if (isNaN(val) || val < 30 || val > 250) return;
 
+      const today = getTodayData();
+      today.todayWeight = val;
+
       const now = new Date();
-      const label = `${now.getDate()}/${now.getMonth() + 1}`;
+      const label = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}`;
       
       // Remplacer si déjà saisi aujourd'hui, sinon ajouter
       const lastEntry = appState.weightHistory[appState.weightHistory.length - 1];
@@ -1229,6 +1346,7 @@
       renderHome();
       renderSportSection();
       updateTimerUI();
+      syncFromGoogleSheets(false);
     });
   </script>
 </body>
